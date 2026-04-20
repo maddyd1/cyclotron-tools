@@ -1,0 +1,8 @@
+venv/
+*.xlsm
+*.xlsx
+*.DS_Store
+~$*
+__pycache__/
+*.pyc
+ism-scraper/ism_history.csv

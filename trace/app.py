@@ -205,30 +205,81 @@ with tab4:
         line=dict(color="#FF9F43", width=1.5)
     ))
     add_ism_markers(fig_temp, ism_filt)
-    fig_temp.update_layout(template="plotly_dark", height=350,
+    fig_temp.update_layout(template="plotly_dark", height=300,
                             yaxis_title="°C", xaxis_title="Date",
                             legend=dict(orientation="h", y=1.1))
     st.plotly_chart(fig_temp, use_container_width=True)
 
-    st.markdown("### LLRF Event Counters")
-    fig_ev = go.Figure()
-    fig_ev.add_trace(go.Scatter(
-        x=cl["date"], y=cl["high_reflected_pwr_count"],
+    st.divider()
+    st.markdown("### RF Health Indicators (daily event rates)")
+    st.caption("Slow drift signals — rising trends here precede acute faults")
+
+    fig_health = go.Figure()
+    fig_health.add_trace(go.Scatter(
+        x=cl["date"], y=cl["high_reflected_pwr_count_daily"],
         name="High Reflected Power", mode="lines",
         line=dict(color="#FF6B6B", width=1.5)
     ))
-    fig_ev.add_trace(go.Scatter(
-        x=cl["date"], y=cl["discharge_count"],
-        name="Discharge Events", mode="lines",
+    fig_health.add_trace(go.Scatter(
+        x=cl["date"], y=cl["p_out_clip_count_daily"],
+        name="P Out Clip", mode="lines",
         line=dict(color="#FF9F43", width=1.5)
     ))
-    fig_ev.add_trace(go.Scatter(
-        x=cl["date"], y=cl["asum_deviation_count"],
-        name="ASUM Deviation", mode="lines",
-        line=dict(color="#7F77DD", width=1.5)
+    fig_health.add_trace(go.Scatter(
+        x=cl["date"], y=cl["hom_reflected_count_daily"],
+        name="HOM Reflected", mode="lines",
+        line=dict(color="#FFC312", width=1.5)
     ))
-    add_ism_markers(fig_ev, ism_filt)
-    fig_ev.update_layout(template="plotly_dark", height=350,
-                          yaxis_title="Count", xaxis_title="Date",
-                          legend=dict(orientation="h", y=1.1))
-    st.plotly_chart(fig_ev, use_container_width=True)
+    fig_health.add_trace(go.Scatter(
+        x=cl["date"], y=cl["discharge_count_daily"],
+        name="Discharge Events", mode="lines",
+        line=dict(color="#A29BFE", width=1.5)
+    ))
+    fig_health.add_trace(go.Scatter(
+        x=cl["date"], y=cl["ecur_count_daily"],
+        name="Electron Current Events", mode="lines",
+        line=dict(color="#00D2D3", width=1.5)
+    ))
+    add_ism_markers(fig_health, ism_filt)
+    fig_health.update_layout(template="plotly_dark", height=350,
+                              yaxis_title="Daily Event Count",
+                              xaxis_title="Date",
+                              legend=dict(orientation="h", y=1.1))
+    st.plotly_chart(fig_health, use_container_width=True)
+
+    st.divider()
+    st.markdown("### Trip & Fault Events (daily event rates)")
+    st.caption("Acute events — these are the faults, not the precursors")
+
+    fig_trips = go.Figure()
+    fig_trips.add_trace(go.Scatter(
+        x=cl["date"], y=cl["rf_off_trips_count_daily"],
+        name="RF Off Trips", mode="lines",
+        line=dict(color="#FF6B6B", width=1.5)
+    ))
+    fig_trips.add_trace(go.Scatter(
+        x=cl["date"], y=cl["llrf_fault_count_daily"],
+        name="LLRF Faults", mode="lines",
+        line=dict(color="#FF9F43", width=1.5)
+    ))
+    fig_trips.add_trace(go.Scatter(
+        x=cl["date"], y=cl["rf_not_reduced_count_daily"],
+        name="RF Not Reduced", mode="lines",
+        line=dict(color="#A29BFE", width=1.5)
+    ))
+    fig_trips.add_trace(go.Scatter(
+        x=cl["date"], y=cl["il_en_rf_on_count_daily"],
+        name="Interlock While RF On", mode="lines",
+        line=dict(color="#00D2D3", width=1.5)
+    ))
+    fig_trips.add_trace(go.Scatter(
+        x=cl["date"], y=cl["asum_deviation_count_daily"],
+        name="ASUM Deviation", mode="lines",
+        line=dict(color="#FFC312", width=1.5)
+    ))
+    add_ism_markers(fig_trips, ism_filt)
+    fig_trips.update_layout(template="plotly_dark", height=350,
+                             yaxis_title="Daily Event Count",
+                             xaxis_title="Date",
+                             legend=dict(orientation="h", y=1.1))
+    st.plotly_chart(fig_trips, use_container_width=True)

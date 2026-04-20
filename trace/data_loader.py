@@ -37,6 +37,14 @@ RF_PARAMS = {
     "CYC:LLRF:EVENT_ASUM_OK:CNT":         "asum_deviation_count",
     "CYC:IS:PS:GET_CURRENT":              "arc_current_A",
     "CYC:1:GET_EXT_EFFICIENCY":           "extraction_efficiency_pct",
+    "CYC:LLRF:EVENT_ECUR:IS_ACT":          "ecur_count",
+    "CYC:LLRF:EVENT_RF_NRED:CNT":          "rf_not_reduced_count",
+    "CYC:LLRF:EVENT_RF_ON:CNT":            "rf_off_trips_count",
+    "CYC:LLRF:EVENT_RF_IL_EN_RF_ON:CNT":   "il_en_rf_on_count",
+    "CYC:LLRF:EVENT_IL_EN_RF_NRED:CNT":    "il_en_rf_nred_count",
+    "CYC:LLRF:EVENT_LLRF_ER_RF_ON:CNT":    "llrf_fault_count",
+    "CYC:LLRF:EVENT_P_OUT_CLIP:CNT":       "p_out_clip_count",
+    "CYC:LLRF:EVENT_PRFL_HOM:IS_ACT":      "hom_reflected_count",
 }
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
@@ -71,9 +79,29 @@ def load_clinical(filepath=CLINICAL_FILE):
     df["reflected_ratio_1"] = df["reflected_power_1_mW"] / df["forward_power_1_mW"].replace(0, float("nan"))
     df["reflected_ratio_2"] = df["reflected_power_2_mW"] / df["forward_power_2_mW"].replace(0, float("nan"))
 
+    df = add_daily_deltas(df)
+    
     print(f"Clinical log: {len(df)} snapshots, {df['date'].min().date()} → {df['date'].max().date()}")
     return df
 
+def add_daily_deltas(df):
+    """
+    Convert cumulative event counters to daily event rates
+    by taking day-over-day differences.
+    Negative deltas (counter reset) are set to zero.
+    """
+    counter_cols = [
+        "high_reflected_pwr_count", "discharge_count", "asum_deviation_count",
+        "ecur_count", "rf_not_reduced_count", "rf_off_trips_count",
+        "il_en_rf_on_count", "il_en_rf_nred_count", "llrf_fault_count",
+        "p_out_clip_count", "hom_reflected_count",
+    ]
+    for col in counter_cols:
+        if col in df.columns:
+            delta = df[col].diff()
+            delta[delta < 0] = 0  # counter reset — treat as zero
+            df[f"{col}_daily"] = delta
+    return df
 
 def load_ism(filepath=ISM_FILE):
     """Load the scraped ISM session history."""
